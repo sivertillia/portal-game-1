@@ -171,9 +171,9 @@ export default function Experience({ onLockChange }: ExperienceProps) {
 
       <mesh ref={floorRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
         <planeGeometry args={[80, 80]} />
-        <meshStandardMaterial color="#0b1221" roughness={0.9} />
+        <meshStandardMaterial color="#ffffff" roughness={0.85} />
       </mesh>
-      <gridHelper args={[80, 80, "#1f2a44", "#0e1626"]} position={[0, 0.02, 0]} />
+      <gridHelper args={[80, 80, "#dcdcdc", "#f0f0f0"]} position={[0, 0.02, 0]} />
 
       <mesh
         ref={wallRef}
@@ -183,7 +183,7 @@ export default function Experience({ onLockChange }: ExperienceProps) {
         receiveShadow
       >
         <boxGeometry args={[0.6, 4.4, 9]} />
-        <meshStandardMaterial color="#0f1c2d" roughness={0.45} metalness={0.15} />
+        <meshStandardMaterial color="#ffffff" roughness={0.35} metalness={0.05} />
       </mesh>
 
       {portals.map((portal) => (
