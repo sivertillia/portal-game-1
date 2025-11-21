@@ -1,5 +1,5 @@
 import { useGLTF } from "@react-three/drei";
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useRef } from "react";
 import * as THREE from "three";
 
 type GreenPortalProps = {
@@ -9,7 +9,10 @@ type GreenPortalProps = {
 };
 
 // Static green portal model normalized for consistent scale.
-export function GreenPortal({ position, rotation = [0, 0, 0], visible = true }: GreenPortalProps) {
+export const GreenPortal = forwardRef<THREE.Group, GreenPortalProps>(function GreenPortal(
+  { position, rotation = [0, 0, 0], visible = true }: GreenPortalProps,
+  ref
+) {
   const holder = useRef<THREE.Group>(null);
   const uri = "/green%20portal.glb";
   const { scene } = useGLTF(uri);
@@ -21,24 +24,17 @@ export function GreenPortal({ position, rotation = [0, 0, 0], visible = true }: 
     holder.current.add(glb);
     glb.updateMatrixWorld(true);
 
-    const box = new THREE.Box3().setFromObject(glb);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-    const targetHeight = 1.6;
-    const scale = size.y > 0 ? targetHeight / size.y : 1;
     glb.scale.setScalar(10);
-      console.log(scale);
-    const scaledCenter = center.clone().multiplyScalar(scale);
     glb.position.set(-1.7, 1.45, -1.27); // center the model so group origin is mid-height
     glb.rotation.set(0, -Math.PI / 2, -Math.PI / 2);
   }, [scene]);
 
   return (
-    <group position={position} rotation={rotation} visible={visible}>
+    <group ref={ref} position={position} rotation={rotation} visible={visible}>
       <group ref={holder} />
       <pointLight position={[0, 0, 0]} intensity={3} distance={5} color="#3cff8b" />
     </group>
   );
-}
+});
 
 useGLTF.preload("/green%20portal.glb");

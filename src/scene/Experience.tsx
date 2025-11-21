@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Sky, Stars } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { PlayerController } from "./PlayerController";
 import { Gun } from "./Gun";
@@ -10,25 +10,37 @@ type ExperienceProps = {
   onLockChange?: (locked: boolean) => void;
 };
 
-const MAX_PORTALS = 3; // Change this to allow more or fewer simultaneously placed portals.
+const MAX_PORTALS = 2; // Change this to allow more or fewer simultaneously placed portals.
+const PORTAL_SIZE = { width: 1.6, height: 2.6 };
 
 type PortalPose = { id: number; pos: [number, number, number]; rot: [number, number, number] };
 
 export default function Experience({ onLockChange }: ExperienceProps) {
   const velocity = useRef(new THREE.Vector3());
   const portalSurfaces = useRef<THREE.Object3D[]>([]);
+  const portalRefs = useRef<Record<number, THREE.Group | null>>({});
   const wallRef = useRef<THREE.Mesh>(null);
   const floorRef = useRef<THREE.Mesh>(null);
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const normalMat = useMemo(() => new THREE.Matrix3(), []);
   const [portals, setPortals] = useState<PortalPose[]>([]);
   const portalId = useRef(0);
+  const prevZ = useRef<Record<number, number>>({});
+  const cooldown = useRef(0);
+  const flip = useMemo(() => new THREE.Matrix4().makeRotationY(Math.PI), []);
+  const inv = useMemo(() => new THREE.Matrix4(), []);
+  const tempMatrix = useMemo(() => new THREE.Matrix4(), []);
+  const rotOnly = useMemo(() => new THREE.Matrix4(), []);
+  const tempVec = useMemo(() => new THREE.Vector3(), []);
   const { camera, gl } = useThree();
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === "r") {
         setPortals([]);
+        portalRefs.current = {};
+        prevZ.current = {};
+        cooldown.current = 0;
       }
     };
     window.addEventListener("keydown", handler);
@@ -72,13 +84,60 @@ export default function Experience({ onLockChange }: ExperienceProps) {
             rot: [euler.x, euler.y, euler.z]
           }
         ];
-        if (next.length > MAX_PORTALS) next.shift();
+        if (next.length > MAX_PORTALS) {
+          const removed = next.shift();
+          if (removed) {
+            delete portalRefs.current[removed.id];
+            delete prevZ.current[removed.id];
+          }
+        }
         return next;
       });
     };
     dom.addEventListener("mousedown", onClick);
     return () => dom.removeEventListener("mousedown", onClick);
   }, [camera, gl.domElement, normalMat, raycaster]);
+
+  const teleportIfCrossed = useCallback(
+    (fromId: number, fromObj: THREE.Object3D, toObj: THREE.Object3D) => {
+      inv.copy(fromObj.matrixWorld).invert();
+      const localPos = tempVec.copy(camera.position).applyMatrix4(inv);
+      const wasZ = prevZ.current[fromId] ?? localPos.z;
+      prevZ.current[fromId] = localPos.z;
+
+      const insideBounds =
+        Math.abs(localPos.x) <= PORTAL_SIZE.width * 0.5 && Math.abs(localPos.y) <= PORTAL_SIZE.height * 0.5;
+
+      if (cooldown.current > 0) return;
+
+      if (insideBounds && wasZ > 0 && localPos.z <= 0.02) {
+        tempMatrix.copy(toObj.matrixWorld).multiply(flip).multiply(inv).multiply(camera.matrixWorld);
+        camera.matrixWorld.copy(tempMatrix);
+        camera.matrixWorld.decompose(camera.position, (camera as THREE.PerspectiveCamera).quaternion, camera.scale);
+        camera.updateMatrixWorld();
+
+        rotOnly.copy(toObj.matrixWorld).multiply(flip).multiply(inv);
+        const rotation = new THREE.Quaternion().setFromRotationMatrix(rotOnly);
+        velocity.current.applyQuaternion(rotation);
+
+        cooldown.current = 0.3;
+      }
+    },
+    [camera, flip, inv, rotOnly, tempMatrix, tempVec, velocity]
+  );
+
+  useFrame((_, delta) => {
+    cooldown.current = Math.max(0, cooldown.current - delta);
+    if (portals.length < 2) return;
+    const pair = portals.slice(-2);
+    const [first, second] = pair;
+    const firstRef = portalRefs.current[first.id];
+    const secondRef = portalRefs.current[second.id];
+    if (!firstRef || !secondRef) return;
+
+    teleportIfCrossed(first.id, firstRef, secondRef);
+    teleportIfCrossed(second.id, secondRef, firstRef);
+  });
 
   return (
     <>
@@ -114,7 +173,16 @@ export default function Experience({ onLockChange }: ExperienceProps) {
       </mesh>
 
       {portals.map((portal) => (
-        <GreenPortal key={portal.id} position={portal.pos} rotation={portal.rot} visible />
+        <GreenPortal
+          key={portal.id}
+          position={portal.pos}
+          rotation={portal.rot}
+          visible
+          ref={(node) => {
+            if (node) portalRefs.current[portal.id] = node;
+            else delete portalRefs.current[portal.id];
+          }}
+        />
       ))}
 
       <Gun />
