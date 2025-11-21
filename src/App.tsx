@@ -48,6 +48,7 @@ export default function App() {
       </div>
 
       <div className="canvas-shell">
+        <div className="crosshair" />
         <Canvas
           shadows
           camera={{ position: [0, 1.6, 8], fov: 70, near: 0.1, far: 200 }}

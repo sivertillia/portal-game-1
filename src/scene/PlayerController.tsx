@@ -61,7 +61,7 @@ export function PlayerController({ velocity, onLockChange }: PlayerControllerPro
   }, [onLockChange]);
 
   useFrame((_, delta) => {
-    const speed = (keys.current.ShiftLeft || keys.current.ShiftRight ? 12 : 8) * delta;
+    const speed = (keys.current.ShiftLeft || keys.current.ShiftRight ? 35 : 20) * delta;
     const desired = new THREE.Vector3();
     const forward = new THREE.Vector3();
     camera.getWorldDirection(forward);
