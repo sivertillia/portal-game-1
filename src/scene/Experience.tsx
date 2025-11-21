@@ -10,7 +10,9 @@ type ExperienceProps = {
   onLockChange?: (locked: boolean) => void;
 };
 
-type PortalPose = { pos: [number, number, number]; rot: [number, number, number] };
+const MAX_PORTALS = 3; // Change this to allow more or fewer simultaneously placed portals.
+
+type PortalPose = { id: number; pos: [number, number, number]; rot: [number, number, number] };
 
 export default function Experience({ onLockChange }: ExperienceProps) {
   const velocity = useRef(new THREE.Vector3());
@@ -19,13 +21,14 @@ export default function Experience({ onLockChange }: ExperienceProps) {
   const floorRef = useRef<THREE.Mesh>(null);
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const normalMat = useMemo(() => new THREE.Matrix3(), []);
-  const [portalPose, setPortalPose] = useState<PortalPose | null>(null);
+  const [portals, setPortals] = useState<PortalPose[]>([]);
+  const portalId = useRef(0);
   const { camera, gl } = useThree();
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === "r") {
-        setPortalPose(null);
+        setPortals([]);
       }
     };
     window.addEventListener("keydown", handler);
@@ -60,7 +63,18 @@ export default function Experience({ onLockChange }: ExperienceProps) {
       const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
       const euler = new THREE.Euler().setFromQuaternion(quat);
 
-      setPortalPose({ pos: position.toArray() as [number, number, number], rot: [euler.x, euler.y, euler.z] });
+      setPortals((current) => {
+        const next: PortalPose[] = [
+          ...current,
+          {
+            id: portalId.current++,
+            pos: position.toArray() as [number, number, number],
+            rot: [euler.x, euler.y, euler.z]
+          }
+        ];
+        if (next.length > MAX_PORTALS) next.shift();
+        return next;
+      });
     };
     dom.addEventListener("mousedown", onClick);
     return () => dom.removeEventListener("mousedown", onClick);
@@ -99,11 +113,9 @@ export default function Experience({ onLockChange }: ExperienceProps) {
         <meshStandardMaterial color="#0f1c2d" roughness={0.45} metalness={0.15} />
       </mesh>
 
-      <GreenPortal
-        position={portalPose?.pos ?? [0, -999, 0]}
-        rotation={portalPose?.rot ?? [0, 0, 0]}
-        visible={!!portalPose}
-      />
+      {portals.map((portal) => (
+        <GreenPortal key={portal.id} position={portal.pos} rotation={portal.rot} visible />
+      ))}
 
       <Gun />
       <PlayerController velocity={velocity} onLockChange={onLockChange} />
