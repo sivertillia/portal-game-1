@@ -4,3 +4,4 @@ node_modules/
 .codex/
 sprint-artifacts/
 sprint_artifacts/
+dist/
