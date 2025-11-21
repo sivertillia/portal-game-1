@@ -33,6 +33,14 @@ export default function Experience({ onLockChange }: ExperienceProps) {
   const rotOnly = useMemo(() => new THREE.Matrix4(), []);
   const tempVec = useMemo(() => new THREE.Vector3(), []);
   const { camera, gl } = useThree();
+  const pointerLocked = useRef(false);
+  const handleLockChange = useCallback(
+    (locked: boolean) => {
+      pointerLocked.current = locked;
+      onLockChange?.(locked);
+    },
+    [onLockChange]
+  );
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -60,7 +68,12 @@ export default function Experience({ onLockChange }: ExperienceProps) {
 
   useEffect(() => {
     const dom = gl.domElement;
-    const onClick = () => {
+    const target = dom.ownerDocument ?? dom;
+    const onClick = (event: MouseEvent) => {
+      const lockedToCanvas = target.pointerLockElement === dom;
+      const fromCanvas = event.composedPath?.().includes(dom);
+      if (!lockedToCanvas && !fromCanvas) return;
+      if (pointerLocked.current && target.pointerLockElement && target.pointerLockElement !== dom) return;
       raycaster.setFromCamera({ x: 0, y: 0 }, camera);
       const hits = raycaster.intersectObjects(portalSurfaces.current, false);
       const hit = hits.find((h) => h.object.userData.portalTarget);
@@ -94,8 +107,9 @@ export default function Experience({ onLockChange }: ExperienceProps) {
         return next;
       });
     };
-    dom.addEventListener("mousedown", onClick);
-    return () => dom.removeEventListener("mousedown", onClick);
+    // Pointer-lock mouse events are dispatched on the document, so listen there to avoid missing clicks.
+    target.addEventListener("mousedown", onClick);
+    return () => target.removeEventListener("mousedown", onClick);
   }, [camera, gl.domElement, normalMat, raycaster]);
 
   const teleportIfCrossed = useCallback(
@@ -186,7 +200,7 @@ export default function Experience({ onLockChange }: ExperienceProps) {
       ))}
 
       <Gun />
-      <PlayerController velocity={velocity} onLockChange={onLockChange} />
+      <PlayerController velocity={velocity} onLockChange={handleLockChange} />
     </>
   );
 }
