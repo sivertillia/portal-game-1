@@ -12,6 +12,10 @@ type ExperienceProps = {
 
 const MAX_PORTALS = 2; // Change this to allow more or fewer simultaneously placed portals.
 const PORTAL_SIZE = { width: 1.6, height: 2.6 };
+const WALL_HEIGHT = 4.4;
+const WALL_THICKNESS = 0.6;
+const WALL_LENGTH = 24;
+const ROOM_HALF = 12;
 
 type PortalPose = { id: number; pos: [number, number, number]; rot: [number, number, number] };
 
@@ -20,6 +24,9 @@ export default function Experience({ onLockChange }: ExperienceProps) {
   const portalSurfaces = useRef<THREE.Object3D[]>([]);
   const portalRefs = useRef<Record<number, THREE.Group | null>>({});
   const wallRef = useRef<THREE.Mesh>(null);
+  const wallRefB = useRef<THREE.Mesh>(null);
+  const wallRefC = useRef<THREE.Mesh>(null);
+  const wallRefD = useRef<THREE.Mesh>(null);
   const floorRef = useRef<THREE.Mesh>(null);
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const normalMat = useMemo(() => new THREE.Matrix3(), []);
@@ -56,14 +63,13 @@ export default function Experience({ onLockChange }: ExperienceProps) {
   }, []);
 
   useEffect(() => {
-    if (wallRef.current) {
-      wallRef.current.userData.portalTarget = true;
-      portalSurfaces.current.push(wallRef.current);
-    }
-    if (floorRef.current) {
-      floorRef.current.userData.portalTarget = true;
-      portalSurfaces.current.push(floorRef.current);
-    }
+    const surfaces = [wallRef, wallRefB, wallRefC, wallRefD, floorRef];
+    surfaces.forEach((ref) => {
+      if (ref.current) {
+        ref.current.userData.portalTarget = true;
+        portalSurfaces.current.push(ref.current);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -177,12 +183,41 @@ export default function Experience({ onLockChange }: ExperienceProps) {
 
       <mesh
         ref={wallRef}
-        position={[9.8, 2.2, 0]}
-        rotation={[0, -Math.PI / 2, 0]}
+        position={[ROOM_HALF, WALL_HEIGHT * 0.5, 0]}
         castShadow
         receiveShadow
       >
-        <boxGeometry args={[0.6, 4.4, 9]} />
+        <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, WALL_LENGTH]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.35} metalness={0.05} />
+      </mesh>
+
+      <mesh
+        ref={wallRefB}
+        position={[-ROOM_HALF, WALL_HEIGHT * 0.5, 0]}
+        castShadow
+        receiveShadow
+      >
+        <boxGeometry args={[WALL_THICKNESS, WALL_HEIGHT, WALL_LENGTH]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.35} metalness={0.05} />
+      </mesh>
+
+      <mesh
+        ref={wallRefC}
+        position={[0, WALL_HEIGHT * 0.5, ROOM_HALF]}
+        castShadow
+        receiveShadow
+      >
+        <boxGeometry args={[WALL_LENGTH, WALL_HEIGHT, WALL_THICKNESS]} />
+        <meshStandardMaterial color="#ffffff" roughness={0.35} metalness={0.05} />
+      </mesh>
+
+      <mesh
+        ref={wallRefD}
+        position={[0, WALL_HEIGHT * 0.5, -ROOM_HALF]}
+        castShadow
+        receiveShadow
+      >
+        <boxGeometry args={[WALL_LENGTH, WALL_HEIGHT, WALL_THICKNESS]} />
         <meshStandardMaterial color="#ffffff" roughness={0.35} metalness={0.05} />
       </mesh>
 
