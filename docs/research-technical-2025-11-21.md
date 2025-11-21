@@ -289,31 +289,36 @@ Consequences:
 
 ### Official Documentation and Release Notes
 
-{{sources_official_docs}}
+- (Offline) Rapier docs — add URL when online
+- (Offline) Cannon-es docs — add URL when online
+- (Offline) Ammo.js/Bullet docs — add URL when online
 
 ### Performance Benchmarks and Comparisons
 
-{{sources_benchmarks}}
+- (Offline) Rapier vs Cannon perf comparisons — add URLs when online
+- (Offline) Portal RTT performance examples — add URLs when online
 
 ### Community Experience and Reviews
 
-{{sources_community}}
+- (Offline) R3F portal examples — add URLs when online
+- (Offline) Rapier community discussions — add URLs when online
+- (Offline) Cannon-es discussions — add URLs when online
 
 ### Architecture Patterns and Best Practices
 
-{{sources_architecture}}
+- (Offline) Portal rendering techniques (RTT, stencil) — add URLs when online
 
 ### Additional Technical References
 
-{{sources_additional}}
+- (Offline) Three.js portal demos — add URLs when online
 
 ### Version Verification
 
-- **Technologies Researched:** {{technology_count}}
-- **Versions Verified ({{current_year}}):** {{verified_versions_count}}
-- **Sources Requiring Update:** {{outdated_sources_count}}
+- **Technologies Researched:** Rapier, Cannon-es, Ammo.js (versions not verified offline)
+- **Versions Verified ({{current_year}}):** 0 (offline mode)
+- **Sources Requiring Update:** all — needs live verification
 
-**Note:** All version numbers were verified using current {{current_year}} sources. Versions may change - always verify latest stable release before implementation.
+**Note:** Version numbers and claims require live verification; update this section when network access is available.
 
 ---
 

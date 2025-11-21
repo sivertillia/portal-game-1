@@ -31,16 +31,16 @@ workflow_status:
     workflows:
       - id: research
         agent: analyst
-        status: recommended
+        status: docs/research-technical-2025-11-21.md
       - id: product-brief
         agent: analyst
-        status: recommended
+        status: docs/product-brief-portal-game-2025-11-21.md
   phase_1:
     id: planning
     workflows:
       - id: prd
         agent: pm
-        status: required
+        status: docs/prd.md
       - id: validate-prd
         agent: pm
         status: optional
@@ -52,19 +52,19 @@ workflow_status:
     workflows:
       - id: create-architecture
         agent: architect
-        status: required
+        status: docs/architecture.md
       - id: create-epics-and-stories
         agent: pm
-        status: required
+        status: docs/epics.md
       - id: test-design
         agent: tea
-        status: recommended
+        status: docs/test-design-system.md
       - id: validate-architecture
         agent: architect
         status: optional
       - id: implementation-readiness
         agent: architect
-        status: required
+        status: docs/implementation-readiness-report-2025-11-21.md
   phase_3:
     id: implementation
     workflows:
