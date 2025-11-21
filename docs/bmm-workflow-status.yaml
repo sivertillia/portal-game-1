@@ -1,0 +1,73 @@
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2025-11-21"
+project: "Portal-Game"
+user_description: "Use react 3 fiber for portal game, webbrowser game with levels (create files for level, Level1.tsx, Level2.tsx)"
+project_type: "game-dev"
+selected_track: "bmad-method"
+field_type: "greenfield"
+brainstorm_requested: false
+research_requested: true
+product_brief_requested: true
+workflow_path: ".bmad/bmm/workflows/workflow-status/paths/method-greenfield.yaml"
+workflow_status:
+  phase_0:
+    id: discovery
+    workflows:
+      - id: research
+        agent: analyst
+        status: recommended
+      - id: product-brief
+        agent: analyst
+        status: recommended
+  phase_1:
+    id: planning
+    workflows:
+      - id: prd
+        agent: pm
+        status: required
+      - id: validate-prd
+        agent: pm
+        status: optional
+      - id: create-design
+        agent: ux-designer
+        status: conditional
+  phase_2:
+    id: solutioning
+    workflows:
+      - id: create-architecture
+        agent: architect
+        status: required
+      - id: create-epics-and-stories
+        agent: pm
+        status: required
+      - id: test-design
+        agent: tea
+        status: recommended
+      - id: validate-architecture
+        agent: architect
+        status: optional
+      - id: implementation-readiness
+        agent: architect
+        status: required
+  phase_3:
+    id: implementation
+    workflows:
+      - id: sprint-planning
+        agent: sm
+        status: required
